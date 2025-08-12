@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Brincando com Sequências (1–10)</title>
+    <style>
+      :root {
+        --bg: #0b1420;
+        --card: #0f1b2a;
+        --card-2: #0d1725;
+        --ink: #e9f1ff;
+        --muted: #9fb3c8;
+        --ok: #27c26c;
+        --no: #ff5c6c;
+        --chip: #2a3a4f;
+        --chip-press: #31465f;
+        --ring: #1e2b3a;
+        --dash: #74879b55;
+        --shadow: 0 10px 24px rgba(0, 0, 0, .35);
+        /* Tamanhos grandes para crianças/telão */
+        --chipH: clamp(64px, 7.5vw, 100px);
+        --chipFS: clamp(24px, 4.2vw, 42px);
+        --gap: clamp(12px, 2.2vw, 22px);
+        --trackH: clamp(180px, 24vh, 320px);
+        /* AUMENTEI AQUI */
+        --slotW: clamp(44px, 6vw, 80px);
+        --radius: 18px;
+      }
+
+      * {
+        box-sizing: border-box
+      }
+
+      html,
+      body {
+        height: 100%
+      }
+
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #07101a, #081824 50%, #07101a);
+        color: var(--ink);
+        font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif;
+        display: flex;
+        justify-content: center
+      }
+
+      .wrap {
+        width: min(1200px, 96vw);
+        padding: 24px
+      }
+
+      header {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap
+      }
+
+      h1 {
+        font-size: clamp(18px, 2.8vw, 28px);
+        margin: 0 12px 0 0
+      }
+
+      .modes {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap
+      }
+
+      .btn {
+        background: var(--card);
+        color: var(--ink);
+        border: 1px solid var(--ring);
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-weight: 600;
+        cursor: pointer
+      }
+
+      .btn[aria-pressed="true"] {
+        outline: 2px solid #3aa0ff;
+        background: #112538
+      }
+
+      .row {
+        margin-top: 16px;
+        display: grid;
+        gap: 18px
+      }
+
+      .card {
+        background: linear-gradient(180deg, var(--card), var(--card-2));
+        border: 1px solid var(--ring);
+        border-radius: 22px;
+        padding: 16px;
+        box-shadow: var(--shadow)
+      }
+
+      .card h2 {
+        margin: 8px 8px 14px;
+        font-size: clamp(18px, 2.6vw, 24px);
+        color: #bcd7ff
+      }
+
+      /* ÁREA DA SEQUÊNCIA */
+      .track {
+        min-height: var(--trackH);
+        display: grid;
+        grid-template-columns: repeat(10, minmax(var(--slotW), 1fr));
+        align-items: center;
+        gap: var(--gap);
+        padding: 18px;
+        border-radius: 18px;
+        outline: 2px dashed var(--dash);
+        outline-offset: -10px;
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      /* Slots vazios: apenas “silhueta”, sem número (SEM COLA) */
+      .slot {
+        width: 100%;
+        height: calc(var(--chipH) * .9);
+        border-radius: 999px;
+        background: linear-gradient(180deg, #0e1c2b, #0e1a25);
+        border: 1px dashed #4d607455;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* CHIP (número clicável) */
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: var(--chipH);
+        min-width: calc(var(--chipH) * 1.1);
+        padding: 0 18px;
+        border-radius: 20px;
+        font-weight: 900;
+        font-size: var(--chipFS);
+        letter-spacing: 1px;
+        background: linear-gradient(180deg, #34465d, #25374d);
+        border: 1px solid #42556a;
+        color: #fff;
+        cursor: pointer;
+        box-shadow: 0 6px 0 #0a1018, 0 12px 24px rgba(0, 0, 0, .35);
+        user-select: none;
+        transition: transform .08s ease, filter .12s ease;
+      }
+
+      .chip:active {
+        transform: translateY(2px);
+        filter: saturate(1.1)
+      }
+
+      .chip.ok {
+        background: linear-gradient(180deg, #49d784, #219a59);
+        border-color: #58e09a
+      }
+
+      .chip.bad {
+        background: linear-gradient(180deg, #ff7b86, #e14b57);
+        border-color: #ff9aa3
+      }
+
+      /* ÁREA DE SELEÇÃO (embaixo) */
+      .picker {
+        display: grid;
+        gap: var(--gap);
+        grid-template-columns: repeat(5, 1fr);
+      }
+
+      @media (max-width: 820px) {
+        .picker {
+          grid-template-columns: repeat(3, 1fr)
+        }
+      }
+
+      .footer {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 14px;
+        text-align: center
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px
+      }
+
+      .sr {
+        position: absolute;
+        left: -9999px
+      }
+    </style>
+    <script type="text/javascript" src="./index.js" defer=""></script>
+    <link rel="stylesheet" href="./index.css">
+  </head>
+
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Brincando com Sequências</h1>
+        <div class="modes">
+          <button class="btn" id="mode-order" aria-pressed="true">Modo 1: Ordem 1–10</button>
+          <button class="btn" id="mode-missing" aria-pressed="false">Modo 2: Números Faltando</button>
+          <div class="actions">
+            <button class="btn" id="btn-new">Novo Desafio</button>
+            <button class="btn" id="btn-reset">Reiniciar</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="card">
+        <h2 id="title">Sequência (clique em ordem e leve ao centro)</h2>
+        <div id="track" class="track" aria-live="polite"></div>
+        <p class="sr" id="live"></p>
+      </section>
+
+      <section class="card">
+        <h2>Área de Seleção</h2>
+        <div id="picker" class="picker"></div>
+      </section>
+
+      <p class="footer">Feito com ❤️ para crianças curiosas.</p>
+    </div>
+
+    <script>
+      /* ===== util ===== */
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+      const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+      const shuffle = arr => {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      };
+
+      /* ===== estado ===== */
+      let mode = 'order'; // 'order' | 'missing'
+      let expected = 1; // próximo número correto no modo 'order'
+      let missingSet = new Set(); // conjunto de ausentes no modo 'missing'
+
+      /* ===== DOM ===== */
+      const track = $('#track');
+      const picker = $('#picker');
+      const title = $('#title');
+      const live = $('#live');
+
+      $('#mode-order').addEventListener('click', () => switchMode('order'));
+      $('#mode-missing').addEventListener('click', () => switchMode('missing'));
+      $('#btn-reset').addEventListener('click', resetRound);
+      $('#btn-new').addEventListener('click', newChallenge);
+
+      /* ===== chips ===== */
+      function makeChip(n) {
+        const b = document.createElement('button');
+        b.className = 'chip';
+        b.type = 'button';
+        b.textContent = n;
+        b.dataset.value = String(n);
+        b.setAttribute('aria-label', `Número ${n}`);
+        b.addEventListener('click', () => onPick(b));
+        return b;
+      }
+
+      /* ===== slots ===== */
+      function buildSlots(preset = []) {
+        track.innerHTML = '';
+        for (let i = 1; i <= 10; i++) {
+          const slot = document.createElement('div');
+          slot.className = 'slot';
+          slot.dataset.index = i;
+          track.appendChild(slot);
+          // Se houver número pré-preenchido, coloca o chip correto no slot
+          if (preset.includes(i)) {
+            const chip = makeChip(i);
+            chip.classList.add('ok'); // visual de fixo
+            chip.disabled = true;
+            slot.appendChild(chip);
+          }
+        }
+      }
+
+      /* ===== modos ===== */
+      function switchMode(next) {
+        mode = next;
+        $('#mode-order').setAttribute('aria-pressed', String(mode === 'order'));
+        $('#mode-missing').setAttribute('aria-pressed', String(mode === 'missing'));
+        newChallenge();
+      }
+
+      function resetRound() {
+        if (mode === 'order') {
+          expected = 1;
+          buildSlots([]); // slots vazios (sem cola!)
+          fillPicker(shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
+          title.textContent = 'Sequência (clique em ordem e leve ao centro)';
+          say(`Novo início. Procure o número ${expected}`);
+        } else {
+          // reconstrói com o mesmo conjunto de faltantes
+          const present = [];
+          for (let i = 1; i <= 10; i++)
+            if (!missingSet.has(i)) present.push(i);
+          buildSlots(present);
+          const miss = [...missingSet];
+          fillPicker(shuffle(miss));
+          title.textContent = 'Complete os espaços (sem dicas visuais)';
+          say(`Complete os espaços vazios com os números que faltam.`);
+        }
+      }
+
+      function newChallenge() {
+        if (mode === 'order') {
+          expected = 1;
+          buildSlots([]); // SEM números fantasmas
+          fillPicker(shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
+          title.textContent = 'Sequência (clique em ordem e leve ao centro)';
+          say(`Desafio novo. Comece pelo número 1.`);
+        } else {
+          // escolhe aleatoriamente 2–4 números para faltar
+          const count = rand(2, 4);
+          const all = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+          missingSet = new Set(shuffle(all).slice(0, count));
+          const present = all.filter(n => !missingSet.has(n));
+          buildSlots(present); // preenche os presentes; slots vazios NÃO têm número
+          fillPicker(shuffle([...missingSet]));
+          title.textContent = 'Complete os espaços (sem dicas visuais)';
+          say(`Há ${count} números faltando. Encontre-os!`);
+        }
+      }
+
+      /* ===== picker ===== */
+      function fillPicker(nums) {
+        picker.innerHTML = '';
+        nums.forEach(n => picker.appendChild(makeChip(n)));
+      }
+
+      /* ===== interação ===== */
+      function onPick(btn) {
+        const n = Number(btn.dataset.value);
+
+        if (mode === 'order') {
+          if (n === expected) {
+            placeInCorrectSlot(btn, n, true);
+            expected++;
+            if (expected === 11) {
+              say('Parabéns! Sequência completa!');
+              confetti(track);
+            } else {
+              say(`Certo! Agora procure o ${expected}.`);
+            }
+          } else {
+            flashBad(btn);
+            say(`Ainda não. O próximo é ${expected}.`);
+          }
+        } else { // missing
+          if (missingSet.has(n)) {
+            placeInCorrectSlot(btn, n, false);
+            missingSet.delete(n);
+            if (missingSet.size === 0) {
+              say('Muito bem! Você completou todos os espaços!');
+              confetti(track);
+            } else {
+              say(`Boa! Restam ${missingSet.size} número(s).`);
+            }
+          } else {
+            flashBad(btn);
+            say('Esse número não está faltando.');
+          }
+        }
+      }
+
+      function placeInCorrectSlot(btn, n, lock) {
+        btn.classList.add('ok');
+        btn.disabled = lock; // em 'order' fica travado; em 'missing' também pode travar
+        // coloca no slot correspondente (posição n)
+        const slot = $(`.slot[data-index="${n}"]`, track);
+        if (slot) {
+          btn.remove(); // remove do picker
+          slot.innerHTML = ''; // garante que o slot esteja limpo
+          slot.appendChild(btn);
+        }
+      }
+
+      function flashBad(btn) {
+        btn.classList.remove('ok');
+        btn.classList.add('bad');
+        setTimeout(() => btn.classList.remove('bad'), 450);
+      }
+
+      function say(text) {
+        live.textContent = text;
+      }
+
+      /* ===== micro-confete (leve) ===== */
+      function confetti(el) {
+        const burst = document.createElement('div');
+        burst.style.position = 'absolute';
+        const rect = el.getBoundingClientRect();
+        burst.style.left = rect.left + rect.width / 2 + 'px';
+        burst.style.top = rect.top + 20 + 'px';
+        burst.style.pointerEvents = 'none';
+        document.body.appendChild(burst);
+        const n = 24;
+        for (let i = 0; i < n; i++) {
+          const p = document.createElement('i');
+          p.style.position = 'fixed';
+          p.style.width = '8px';
+          p.style.height = '8px';
+          p.style.background = 'hsl(' + (i * (360 / n)) + ' 80% 60%)';
+          p.style.left = (rect.left + rect.width / 2) + 'px';
+          p.style.top = (rect.top + 40) + 'px';
+          p.style.borderRadius = '2px';
+          p.style.transition = 'transform .8s ease-out, opacity .9s ease';
+          const a = Math.random() * Math.PI * 2,
+            r = 120 + Math.random() * 80;
+          const dx = Math.cos(a) * r,
+            dy = Math.sin(a) * r;
+          requestAnimationFrame(() => {
+            p.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random()*360}deg)`;
+            p.style.opacity = '0';
+          });
+          document.body.appendChild(p);
+          setTimeout(() => p.remove(), 900);
+        }
+        setTimeout(() => burst.remove(), 900);
+      }
+
+      /* start */
+      newChallenge();
+    </script>
+
+
+  </body>
+
+</html>
